@@ -1,0 +1,222 @@
+{
+  "usgs_search_earthquakes": {
+    "description": "Search earthquakes from the USGS FDSN API with basic filters.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "starttime": {
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO8601."
+        },
+        "endtime": {
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO8601."
+        },
+        "minmagnitude": {
+          "type": "number",
+          "description": "Minimum magnitude.",
+          "default": 4.5
+        },
+        "maxmagnitude": {
+          "type": "number",
+          "description": "Maximum magnitude, optional."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Center latitude for radius search, optional."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Center longitude for radius search, optional."
+        },
+        "maxradiuskm": {
+          "type": "number",
+          "description": "Search radius in kilometers, optional."
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of events.",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "required": [
+        "starttime",
+        "endtime"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "tmd_get_daily_earthquakes": {
+    "description": "Get daily earthquakes from the TMD DailySeismicEvent demo API.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "YYYY-MM-DD. If omitted, use today's date."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "tmd_get_recent_earthquakes": {
+    "description": "Get recent earthquakes from TMD over the last N days using DailySeismicEvent.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "days": {
+          "type": "integer",
+          "description": "Number of days back from today (including today).",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 7
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "match_events_to_assets": {
+    "description": "Match earthquake events to insured assets within a given radius and magnitude threshold.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "description": "List of EarthquakeEvent objects.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "assets": {
+          "type": "array",
+          "description": "Insured assets with coordinates.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "asset_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "sum_insured": {
+                "type": "number",
+                "description": "Optional total insured value."
+              }
+            },
+            "required": [
+              "asset_id",
+              "latitude",
+              "longitude"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "max_distance_km": {
+          "type": "number",
+          "description": "Max distance to consider an asset affected.",
+          "default": 100
+        },
+        "min_magnitude": {
+          "type": "number",
+          "description": "Minimum magnitude to consider.",
+          "default": 4.5
+        }
+      },
+      "required": [
+        "events",
+        "assets"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "compute_parametric_payout": {
+    "description": "Compute a simple parametric payout for an earthquake event and a set of assets, based on distance and magnitude thresholds.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "object",
+          "description": "Single EarthquakeEvent to evaluate."
+        },
+        "assets": {
+          "type": "array",
+          "description": "Assets with coordinates and sum_insured.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "asset_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "sum_insured": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "asset_id",
+              "latitude",
+              "longitude",
+              "sum_insured"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "min_magnitude_trigger": {
+          "type": "number",
+          "description": "Minimum magnitude to trigger any payout.",
+          "default": 5.0
+        },
+        "max_distance_km_trigger": {
+          "type": "number",
+          "description": "Max distance for eligibility.",
+          "default": 200
+        },
+        "payout_curve": {
+          "type": "array",
+          "description": "Optional distance-based payout curve.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "max_distance_km": {
+                "type": "number"
+              },
+              "payout_percent": {
+                "type": "number",
+                "description": "Fraction of sum_insured (0.0–1.0)."
+              }
+            },
+            "required": [
+              "max_distance_km",
+              "payout_percent"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "event",
+        "assets"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
